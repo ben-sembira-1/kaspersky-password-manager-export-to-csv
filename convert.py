@@ -1,45 +1,104 @@
-from dataclasses import dataclass
+from pydantic import BaseModel, Field
 from pathlib import Path
 import sys
-from typing import List
+from typing import Dict, List, Tuple
 
 from pandas import DataFrame
 
 
-@dataclass
-class KasperskyWebsiteEntry:
-    website_name: str
-    website_url: str
-    login_name: str
-    login: str
-    password: str
-    comment: str
+def key_value_from_line(key_value: str) -> Tuple[str, str]:
+    splitted = key_value.split(sep=": ", maxsplit=1)
+    if len(splitted) == 1:
+        return splitted[0], ""
+
+    key, value = splitted
+    return key, value
 
 
-@dataclass
-class KasperskyApplicationEntry:
-    application_name: str
-    login_name: str
-    login: str
-    password: str
-    comment: str
+def parse_colon_separated_key_value_pairs(entry: str) -> Dict[str, str]:
+    stripped = entry.strip("\n")
+    lines = stripped.splitlines()
+    key_value_pairs = [key_value_from_line(line) for line in lines]
+    return {pair[0]: pair[1] for pair in key_value_pairs}
 
 
-@dataclass
-class KasperskyNoteEntry:
-    note_name: str
-    text: str
+def parse_entries_section(txt: str) -> List[Dict[str, str]]:
+    entries = txt.split("---")
+    return [parse_colon_separated_key_value_pairs(entry) for entry in entries]
 
 
-@dataclass
-class KasperskyPasswordManagerEntriesSet:
+class KasperskyWebsiteEntry(BaseModel):
+    website_name: str = Field(alias="Website name")
+    website_url: str = Field(alias="Website URL")
+    login_name: str = Field(alias="Login name")
+    login: str = Field(alias="Login")
+    password: str = Field(alias="Password")
+    comment: str = Field(alias="Comment")
+
+
+class KasperskyApplicationEntry(BaseModel):
+    application_name: str = Field(alias="Application")
+    login_name: str = Field(alias="Login name")
+    login: str = Field(alias="Login")
+    password: str = Field(alias="Password")
+    comment: str = Field(alias="Comment")
+
+
+class KasperskyNoteEntry(BaseModel):
+    note_name: str = Field(alias="Name")
+    text: str = Field(alias="Text")
+
+
+class KasperskyPasswordManagerEntriesSet(BaseModel):
     websites: List[KasperskyWebsiteEntry]
     applications: List[KasperskyApplicationEntry]
     notes: List[KasperskyNoteEntry]
 
 
+WEBSITES_IDENTIFIER = "Websites\n\n"
+APPLICATIONS_IDENTIFIER = "\n\n---\n\nApplications\n\n"
+NOTES_IDENTIFIER = "\n\n---\n\nNotes\n\n"
+
+
+def extract_websites_from_txt_format(text_file_content: str) -> str:
+    start_index = text_file_content.find(
+        WEBSITES_IDENTIFIER) + len(WEBSITES_IDENTIFIER)
+    end_index = text_file_content.find(APPLICATIONS_IDENTIFIER)
+    return text_file_content[start_index: end_index].strip("\n")
+
+
+def extract_applications_from_txt_format(text_file_content: str) -> str:
+    start_index = text_file_content.find(
+        APPLICATIONS_IDENTIFIER) + len(APPLICATIONS_IDENTIFIER)
+    end_index = text_file_content.find(NOTES_IDENTIFIER)
+    return text_file_content[start_index: end_index].strip("\n")
+
+
+def extract_notes_from_txt_format(text_file_content: str) -> str:
+    EOF_IDENTIFIER = "\n\n---\n"
+    start_index = text_file_content.find(
+        NOTES_IDENTIFIER) + len(NOTES_IDENTIFIER)
+    end_index = text_file_content.rfind(EOF_IDENTIFIER)
+    return text_file_content[start_index:end_index].strip("\n")
+
+
 def extract_passwords_from_txt_format(txt_file_content: str) -> KasperskyPasswordManagerEntriesSet:
-    raise NotImplementedError()
+    websites_dicts = parse_entries_section(
+        extract_websites_from_txt_format(txt_file_content))
+    applications_dicts = parse_entries_section(
+        extract_applications_from_txt_format(txt_file_content))
+    notes_dicts = parse_entries_section(
+        extract_notes_from_txt_format(txt_file_content))
+    print(f"{notes_dicts=}")
+
+    return KasperskyPasswordManagerEntriesSet(
+        websites=[KasperskyWebsiteEntry(
+            **entry) for entry in websites_dicts],
+        applications=[KasperskyApplicationEntry(
+            **entry) for entry in applications_dicts],
+        notes=[KasperskyNoteEntry(
+            **entry) for entry in notes_dicts],
+    )
 
 
 def create_df_from_passwords(passwords: KasperskyPasswordManagerEntriesSet) -> DataFrame:

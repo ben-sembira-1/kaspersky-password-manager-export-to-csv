@@ -3,6 +3,92 @@ import pytest
 import convert
 
 
+def test_extract_sections_from_txt_format():
+    entry1 = "content: abc\nmore stuff"
+    entry2 = "hey there -> abc\n:>)"
+    entry3 = "more stuff"
+    entry4 = "def a():\nreturn 0"
+    entry5 = "pure\nrandom\nstuff"
+    entry6 = "surely_random"
+    websites_text = \
+        f"""\
+{entry1}
+
+---
+
+{entry2}\
+"""
+    applications_text = \
+        f"""\
+{entry3}
+
+---
+
+{entry4}\
+"""
+    notes_text = \
+        f"""\
+{entry5}
+
+---
+
+{entry6}\
+"""
+    raw = \
+        f"""\
+Websites
+
+{websites_text}
+
+---
+
+Applications
+
+{applications_text}
+
+---
+
+Notes
+
+{notes_text}
+
+---
+
+"""
+    assert convert.extract_websites_from_txt_format(raw) == websites_text
+    assert convert.extract_applications_from_txt_format(
+        raw) == applications_text
+    assert convert.extract_notes_from_txt_format(raw) == notes_text
+
+
+@pytest.mark.parametrize("line,key,value", [
+    ("key1: value", "key1", "value"),
+    ("key2: ", "key2", ""),
+    ("key3: a b c", "key3", "a b c"),
+    ("key4: a: b", "key4", "a: b"),
+])
+def test_key_value_from_line(line: str, key: str, value: str):
+    assert convert.key_value_from_line(line) == (key, value)
+
+
+def test_colon_separated_format_parser():
+    raw = \
+        """
+
+key1: value number 1
+key2: value2
+key3: 1234
+
+
+
+"""
+    assert convert.parse_colon_separated_key_value_pairs(raw) == {
+        "key1": "value number 1",
+        "key2": "value2",
+        "key3": "1234"
+    }
+
+
 def test_parsing_txt_format():
     txt_format = Path("example.txt").read_text()
     assert convert.extract_passwords_from_txt_format(txt_format) == convert.KasperskyPasswordManagerEntriesSet(
