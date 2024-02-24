@@ -86,7 +86,7 @@ def extract_notes_from_txt_format(text_file_content: str) -> str:
     return text_file_content[start_index:end_index].strip("\n")
 
 
-def extract_passwords_from_txt_format(txt_file_content: str) -> KasperskyPasswordManagerEntriesSet:
+def extract_entries_from_txt_format(txt_file_content: str) -> KasperskyPasswordManagerEntriesSet:
     websites_dicts = parse_entries_section(
         extract_websites_from_txt_format(txt_file_content))
     applications_dicts = parse_entries_section(
@@ -105,13 +105,13 @@ def extract_passwords_from_txt_format(txt_file_content: str) -> KasperskyPasswor
     )
 
 
-def create_df_from_passwords(passwords: KasperskyPasswordManagerEntriesSet) -> DataFrame:
+def create_google_passwords_df_from_entries(entries: KasperskyPasswordManagerEntriesSet) -> DataFrame:
     raise NotImplementedError()
 
 
 def convert_txt_file_to_google_passwords_compatible_csv(txt_file_path: Path):
-    passwords = extract_passwords_from_txt_format(txt_file_path.read_text())
-    passwords_table = create_df_from_passwords(passwords)
+    entries = extract_entries_from_txt_format(txt_file_path.read_text())
+    passwords_table = create_google_passwords_df_from_entries(entries)
     passwords_table.to_csv(f"{txt_file_path.name}.csv")
 
 

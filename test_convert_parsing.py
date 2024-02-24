@@ -91,7 +91,7 @@ key3: 1234
 
 def test_parsing_txt_format():
     txt_format = Path("example.txt").read_text()
-    assert convert.extract_passwords_from_txt_format(txt_format) == convert.KasperskyPasswordManagerEntriesSet(
+    assert convert.extract_entries_from_txt_format(txt_format) == convert.KasperskyPasswordManagerEntriesSet(
         websites=[
             convert.KasperskyWebsiteEntry(
                 website_name="Account Jetbrains",
