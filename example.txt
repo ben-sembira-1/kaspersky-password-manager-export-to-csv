@@ -19,7 +19,7 @@ Comment:
 ---
 
 Website name: accounts.google.com
-Website URL: https://accounts.google.com
+Website URL: accounts.google.com
 Login name: 
 Login: userName2.2
 Password: password2.2

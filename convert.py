@@ -40,10 +40,10 @@ class KasperskyWebsiteEntry(BaseModelWithAliasesAndOriginalFields):
     password: str = Field(alias="Password")
     comment: str = Field(alias="Comment")
 
-    @field_validator("website_name")
+    @field_validator("website_url")
     @classmethod
     def name_must_contain_space(cls, v: str) -> str:
-        if not v.startswith("https://") or v.startswith("http://"):
+        if not (v.startswith("https://") or v.startswith("http://")):
             return f"https://{v}"
         return v
 
