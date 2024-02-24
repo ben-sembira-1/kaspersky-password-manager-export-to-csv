@@ -150,10 +150,4 @@ def test_txt_to_df():
     generated = convert.convert_txt_file_to_google_passwords_compatible_csv(
         Path("example.txt")
     )
-    print(reference)
-    print(generated)
-    print(type(reference["note"][3]))
-    print(type(generated["note"][3]))
-    assert pandas.read_csv("example.csv").equals(
-        convert.convert_txt_file_to_google_passwords_compatible_csv(Path("example.txt"))
-    )
+    assert reference.equals(generated)
