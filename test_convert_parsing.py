@@ -95,7 +95,7 @@ def test_parsing_txt_format():
         websites=[
             convert.KasperskyWebsiteEntry(
                 website_name="Account Jetbrains",
-                website_url="https://account.jetbrains.com",
+                website_url="http://account.jetbrains.com",
                 login_name="",
                 login="userName1",
                 password="password1",
@@ -120,21 +120,21 @@ def test_parsing_txt_format():
         ],
         applications=[
             convert.KasperskyApplicationEntry(
-                application_name="Dji.com",
+                application_name="https://Dji.com",
                 login_name="",
                 login="userName3",
                 password="password3",
                 comment="",
             ),
             convert.KasperskyApplicationEntry(
-                application_name="App2",
+                application_name="https://App2",
                 login_name="",
                 login="userName4",
                 password="password4",
                 comment="Use only at home",
             ),
             convert.KasperskyApplicationEntry(
-                application_name="App3",
+                application_name="https://App3",
                 login_name="",
                 login="userName5",
                 password="password5",

@@ -1,7 +1,7 @@
 Websites
 
 Website name: Account Jetbrains
-Website URL: https://account.jetbrains.com
+Website URL: http://account.jetbrains.com
 Login name: 
 Login: userName1
 Password: password1
