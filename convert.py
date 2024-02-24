@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from pathlib import Path
 import sys
 from typing import Dict, List, Tuple
@@ -27,7 +27,11 @@ def parse_entries_section(txt: str) -> List[Dict[str, str]]:
     return [parse_colon_separated_key_value_pairs(entry) for entry in entries]
 
 
-class KasperskyWebsiteEntry(BaseModel):
+class BaseModelWithAliasesAndOriginalFields(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class KasperskyWebsiteEntry(BaseModelWithAliasesAndOriginalFields):
     website_name: str = Field(alias="Website name")
     website_url: str = Field(alias="Website URL")
     login_name: str = Field(alias="Login name")
@@ -36,7 +40,7 @@ class KasperskyWebsiteEntry(BaseModel):
     comment: str = Field(alias="Comment")
 
 
-class KasperskyApplicationEntry(BaseModel):
+class KasperskyApplicationEntry(BaseModelWithAliasesAndOriginalFields):
     application_name: str = Field(alias="Application")
     login_name: str = Field(alias="Login name")
     login: str = Field(alias="Login")
@@ -44,7 +48,7 @@ class KasperskyApplicationEntry(BaseModel):
     comment: str = Field(alias="Comment")
 
 
-class KasperskyNoteEntry(BaseModel):
+class KasperskyNoteEntry(BaseModelWithAliasesAndOriginalFields):
     note_name: str = Field(alias="Name")
     text: str = Field(alias="Text")
 
