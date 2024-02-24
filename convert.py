@@ -110,17 +110,20 @@ def create_google_passwords_df_from_entries(
     entries: KasperskyPasswordManagerEntriesSet,
 ) -> DataFrame:
     websites_entries = np.array(
-        [[entry.website_url, entry.login, entry.password] for entry in entries.websites]
+        [
+            [entry.website_url, entry.login, entry.password, entry.comment]
+            for entry in entries.websites
+        ]
     )
     applications_entries = np.array(
         [
-            [entry.application_name, entry.login, entry.password]
+            [entry.application_name, entry.login, entry.password, entry.comment]
             for entry in entries.applications
         ]
     )
     return DataFrame(
         np.concatenate((websites_entries, applications_entries), axis=0),
-        columns=["url", "username", "password"],
+        columns=["url", "username", "password", "note"],
     )
 
 
@@ -134,10 +137,10 @@ def convert_txt_file_to_google_passwords_compatible_csv(
 def main(arguments: List[str]):
     assert len(arguments) == 2, f"USAGE: {Path(__file__).name} dd-mm-yyyy.txt"
     txt_file_path = Path(arguments[1])
-    
+
     assert txt_file_path.name.endswith(".txt"), "Supporting only .txt files"
     new_csv_file_name = txt_file_path.name.removesuffix(".txt") + ".csv"
-    
+
     assert txt_file_path.exists(), f"The file {txt_file_path.as_uri} does not exist"
     passwords_df = convert_txt_file_to_google_passwords_compatible_csv(txt_file_path)
     passwords_df.to_csv(new_csv_file_name)

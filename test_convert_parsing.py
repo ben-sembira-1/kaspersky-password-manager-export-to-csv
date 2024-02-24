@@ -99,7 +99,7 @@ def test_parsing_txt_format():
                 login_name="",
                 login="userName1",
                 password="password1",
-                comment="",
+                comment="My lovely comment",
             ),
             convert.KasperskyWebsiteEntry(
                 website_name="accounts.google.com",
@@ -131,7 +131,7 @@ def test_parsing_txt_format():
                 login_name="",
                 login="userName4",
                 password="password4",
-                comment="",
+                comment="Use only at home",
             ),
             convert.KasperskyApplicationEntry(
                 application_name="App3",
@@ -146,6 +146,14 @@ def test_parsing_txt_format():
 
 
 def test_txt_to_df():
+    reference = pandas.read_csv("example.csv", keep_default_na=False)
+    generated = convert.convert_txt_file_to_google_passwords_compatible_csv(
+        Path("example.txt")
+    )
+    print(reference)
+    print(generated)
+    print(type(reference["note"][3]))
+    print(type(generated["note"][3]))
     assert pandas.read_csv("example.csv").equals(
         convert.convert_txt_file_to_google_passwords_compatible_csv(Path("example.txt"))
     )

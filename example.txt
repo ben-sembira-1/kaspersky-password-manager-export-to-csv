@@ -5,7 +5,7 @@ Website URL: https://account.jetbrains.com
 Login name: 
 Login: userName1
 Password: password1
-Comment: 
+Comment: My lovely comment
 
 ---
 
@@ -41,7 +41,7 @@ Application: App2
 Login name: 
 Login: userName4
 Password: password4
-Comment: 
+Comment: Use only at home
 
 ---
 
