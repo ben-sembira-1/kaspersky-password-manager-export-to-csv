@@ -4,6 +4,7 @@ import sys
 from typing import Dict, List, Tuple
 
 from pandas import DataFrame
+import numpy as np
 
 
 def key_value_from_line(key_value: str) -> Tuple[str, str]:
@@ -65,62 +66,78 @@ NOTES_IDENTIFIER = "\n\n---\n\nNotes\n\n"
 
 
 def extract_websites_from_txt_format(text_file_content: str) -> str:
-    start_index = text_file_content.find(
-        WEBSITES_IDENTIFIER) + len(WEBSITES_IDENTIFIER)
+    start_index = text_file_content.find(WEBSITES_IDENTIFIER) + len(WEBSITES_IDENTIFIER)
     end_index = text_file_content.find(APPLICATIONS_IDENTIFIER)
-    return text_file_content[start_index: end_index].strip("\n")
+    return text_file_content[start_index:end_index].strip("\n")
 
 
 def extract_applications_from_txt_format(text_file_content: str) -> str:
-    start_index = text_file_content.find(
-        APPLICATIONS_IDENTIFIER) + len(APPLICATIONS_IDENTIFIER)
+    start_index = text_file_content.find(APPLICATIONS_IDENTIFIER) + len(
+        APPLICATIONS_IDENTIFIER
+    )
     end_index = text_file_content.find(NOTES_IDENTIFIER)
-    return text_file_content[start_index: end_index].strip("\n")
+    return text_file_content[start_index:end_index].strip("\n")
 
 
 def extract_notes_from_txt_format(text_file_content: str) -> str:
     EOF_IDENTIFIER = "\n\n---\n"
-    start_index = text_file_content.find(
-        NOTES_IDENTIFIER) + len(NOTES_IDENTIFIER)
+    start_index = text_file_content.find(NOTES_IDENTIFIER) + len(NOTES_IDENTIFIER)
     end_index = text_file_content.rfind(EOF_IDENTIFIER)
     return text_file_content[start_index:end_index].strip("\n")
 
 
-def extract_entries_from_txt_format(txt_file_content: str) -> KasperskyPasswordManagerEntriesSet:
+def extract_entries_from_txt_format(
+    txt_file_content: str,
+) -> KasperskyPasswordManagerEntriesSet:
     websites_dicts = parse_entries_section(
-        extract_websites_from_txt_format(txt_file_content))
+        extract_websites_from_txt_format(txt_file_content)
+    )
     applications_dicts = parse_entries_section(
-        extract_applications_from_txt_format(txt_file_content))
-    notes_dicts = parse_entries_section(
-        extract_notes_from_txt_format(txt_file_content))
+        extract_applications_from_txt_format(txt_file_content)
+    )
+    notes_dicts = parse_entries_section(extract_notes_from_txt_format(txt_file_content))
     print(f"{notes_dicts=}")
 
     return KasperskyPasswordManagerEntriesSet(
-        websites=[KasperskyWebsiteEntry(
-            **entry) for entry in websites_dicts],
-        applications=[KasperskyApplicationEntry(
-            **entry) for entry in applications_dicts],
-        notes=[KasperskyNoteEntry(
-            **entry) for entry in notes_dicts],
+        websites=[KasperskyWebsiteEntry(**entry) for entry in websites_dicts],
+        applications=[
+            KasperskyApplicationEntry(**entry) for entry in applications_dicts
+        ],
+        notes=[KasperskyNoteEntry(**entry) for entry in notes_dicts],
     )
 
 
-def create_google_passwords_df_from_entries(entries: KasperskyPasswordManagerEntriesSet) -> DataFrame:
-    raise NotImplementedError()
+def create_google_passwords_df_from_entries(
+    entries: KasperskyPasswordManagerEntriesSet,
+) -> DataFrame:
+    websites_entries = np.array(
+        [[entry.website_url, entry.login, entry.password] for entry in entries.websites]
+    )
+    applications_entries = np.array(
+        [
+            [entry.application_name, entry.login, entry.password]
+            for entry in entries.applications
+        ]
+    )
+    return DataFrame(
+        np.concatenate((websites_entries, applications_entries), axis=0),
+        columns=["url", "username", "password"],
+    )
 
 
-def convert_txt_file_to_google_passwords_compatible_csv(txt_file_path: Path):
+def convert_txt_file_to_google_passwords_compatible_csv(
+    txt_file_path: Path,
+) -> DataFrame:
     entries = extract_entries_from_txt_format(txt_file_path.read_text())
-    passwords_table = create_google_passwords_df_from_entries(entries)
-    passwords_table.to_csv(f"{txt_file_path.name}.csv")
+    return create_google_passwords_df_from_entries(entries)
 
 
 def main(arguments: List[str]):
     assert len(arguments) == 2, f"USAGE: {__file__} dd-mm-yyyy.txt"
     txt_file_path = Path(arguments[1])
-    assert txt_file_path.exists(
-    ), f"The file {txt_file_path.as_uri} does not exist"
-    convert_txt_file_to_google_passwords_compatible_csv(txt_file_path)
+    assert txt_file_path.exists(), f"The file {txt_file_path.as_uri} does not exist"
+    passwords_df = convert_txt_file_to_google_passwords_compatible_csv(txt_file_path)
+    passwords_df.to_csv(f"{txt_file_path.name}.csv")
 
 
 if __name__ == "__main__":

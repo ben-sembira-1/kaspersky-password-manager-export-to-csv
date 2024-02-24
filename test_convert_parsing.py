@@ -1,5 +1,6 @@
 from pathlib import Path
 import pytest
+import pandas
 import convert
 
 
@@ -10,32 +11,28 @@ def test_extract_sections_from_txt_format():
     entry4 = "def a():\nreturn 0"
     entry5 = "pure\nrandom\nstuff"
     entry6 = "surely_random"
-    websites_text = \
-        f"""\
+    websites_text = f"""\
 {entry1}
 
 ---
 
 {entry2}\
 """
-    applications_text = \
-        f"""\
+    applications_text = f"""\
 {entry3}
 
 ---
 
 {entry4}\
 """
-    notes_text = \
-        f"""\
+    notes_text = f"""\
 {entry5}
 
 ---
 
 {entry6}\
 """
-    raw = \
-        f"""\
+    raw = f"""\
 Websites
 
 {websites_text}
@@ -56,24 +53,25 @@ Notes
 
 """
     assert convert.extract_websites_from_txt_format(raw) == websites_text
-    assert convert.extract_applications_from_txt_format(
-        raw) == applications_text
+    assert convert.extract_applications_from_txt_format(raw) == applications_text
     assert convert.extract_notes_from_txt_format(raw) == notes_text
 
 
-@pytest.mark.parametrize("line,key,value", [
-    ("key1: value", "key1", "value"),
-    ("key2: ", "key2", ""),
-    ("key3: a b c", "key3", "a b c"),
-    ("key4: a: b", "key4", "a: b"),
-])
+@pytest.mark.parametrize(
+    "line,key,value",
+    [
+        ("key1: value", "key1", "value"),
+        ("key2: ", "key2", ""),
+        ("key3: a b c", "key3", "a b c"),
+        ("key4: a: b", "key4", "a: b"),
+    ],
+)
 def test_key_value_from_line(line: str, key: str, value: str):
     assert convert.key_value_from_line(line) == (key, value)
 
 
 def test_colon_separated_format_parser():
-    raw = \
-        """
+    raw = """
 
 key1: value number 1
 key2: value2
@@ -85,13 +83,15 @@ key3: 1234
     assert convert.parse_colon_separated_key_value_pairs(raw) == {
         "key1": "value number 1",
         "key2": "value2",
-        "key3": "1234"
+        "key3": "1234",
     }
 
 
 def test_parsing_txt_format():
     txt_format = Path("example.txt").read_text()
-    assert convert.extract_entries_from_txt_format(txt_format) == convert.KasperskyPasswordManagerEntriesSet(
+    assert convert.extract_entries_from_txt_format(
+        txt_format
+    ) == convert.KasperskyPasswordManagerEntriesSet(
         websites=[
             convert.KasperskyWebsiteEntry(
                 website_name="Account Jetbrains",
@@ -99,7 +99,7 @@ def test_parsing_txt_format():
                 login_name="",
                 login="userName1",
                 password="password1",
-                comment=""
+                comment="",
             ),
             convert.KasperskyWebsiteEntry(
                 website_name="accounts.google.com",
@@ -107,7 +107,7 @@ def test_parsing_txt_format():
                 login_name="",
                 login="userName2.1",
                 password="password2.1",
-                comment=""
+                comment="",
             ),
             convert.KasperskyWebsiteEntry(
                 website_name="accounts.google.com",
@@ -115,7 +115,7 @@ def test_parsing_txt_format():
                 login_name="",
                 login="userName2.2",
                 password="password2.2",
-                comment=""
+                comment="",
             ),
         ],
         applications=[
@@ -124,27 +124,28 @@ def test_parsing_txt_format():
                 login_name="",
                 login="userName3",
                 password="password3",
-                comment=""
+                comment="",
             ),
             convert.KasperskyApplicationEntry(
                 application_name="App2",
                 login_name="",
                 login="userName4",
                 password="password4",
-                comment=""
+                comment="",
             ),
             convert.KasperskyApplicationEntry(
                 application_name="App3",
                 login_name="",
                 login="userName5",
                 password="password5",
-                comment=""
+                comment="",
             ),
         ],
-        notes=[
-            convert.KasperskyNoteEntry(
-                note_name="My lovely note",
-                text="1234"
-            )
-        ]
+        notes=[convert.KasperskyNoteEntry(note_name="My lovely note", text="1234")],
+    )
+
+
+def test_txt_to_df():
+    assert pandas.read_csv("example.csv").equals(
+        convert.convert_txt_file_to_google_passwords_compatible_csv(Path("example.txt"))
     )
