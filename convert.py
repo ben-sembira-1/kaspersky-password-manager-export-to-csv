@@ -96,7 +96,6 @@ def extract_entries_from_txt_format(
         extract_applications_from_txt_format(txt_file_content)
     )
     notes_dicts = parse_entries_section(extract_notes_from_txt_format(txt_file_content))
-    print(f"{notes_dicts=}")
 
     return KasperskyPasswordManagerEntriesSet(
         websites=[KasperskyWebsiteEntry(**entry) for entry in websites_dicts],
@@ -133,11 +132,15 @@ def convert_txt_file_to_google_passwords_compatible_csv(
 
 
 def main(arguments: List[str]):
-    assert len(arguments) == 2, f"USAGE: {__file__} dd-mm-yyyy.txt"
+    assert len(arguments) == 2, f"USAGE: {Path(__file__).name} dd-mm-yyyy.txt"
     txt_file_path = Path(arguments[1])
+    
+    assert txt_file_path.name.endswith(".txt"), "Supporting only .txt files"
+    new_csv_file_name = txt_file_path.name.removesuffix(".txt") + ".csv"
+    
     assert txt_file_path.exists(), f"The file {txt_file_path.as_uri} does not exist"
     passwords_df = convert_txt_file_to_google_passwords_compatible_csv(txt_file_path)
-    passwords_df.to_csv(f"{txt_file_path.name}.csv")
+    passwords_df.to_csv(new_csv_file_name)
 
 
 if __name__ == "__main__":
